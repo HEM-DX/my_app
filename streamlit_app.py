@@ -15,8 +15,6 @@ file_options = {
     "E51G-JP": os.path.join("data", "E51G-JP使用量.xlsx")
 }
 
-}
-
 # ファイル選択
 selected_file_key = st.sidebar.selectbox("📂 使用するExcelファイルを選択", list(file_options.keys()))
 file_path = file_options[selected_file_key]
