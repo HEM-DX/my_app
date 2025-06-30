@@ -10,7 +10,7 @@ st.title("使用量と必要本数シミュレーター")
 import os
 
 file_options = {
-    "32Rk40": os.path.join("data", "32Rk40.xlsx"),
+    "k40": os.path.join("data", "32Rk40.xlsx"),
     "1085G": os.path.join("data", "1085G使用量.xlsx"),
     "E51G-JP": os.path.join("data", "E51G-JP使用量.xlsx")
 }
