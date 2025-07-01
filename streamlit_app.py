@@ -16,7 +16,7 @@ file_options = {
 }
 
 # ファイル選択
-selected_file_key = st.sidebar.selectbox("📂 使用するExcelファイルを選択", list(file_options.keys()))
+selected_file_key = st.sidebar.selectbox("シーラー選択", list(file_options.keys()))
 file_path = file_options[selected_file_key]
 
 try:
@@ -36,11 +36,11 @@ try:
     selected_processes = st.sidebar.multiselect(
         "工程を選択", options=df["工程"].unique(), default=list(df["工程"].unique())
     )
-    operating_days = st.sidebar.number_input("稼働日数（生産）", min_value=1, value=20)
-    production_units = st.sidebar.number_input("1日あたり生産台数", min_value=1, value=1100)
-    drum_capacity = st.sidebar.number_input("ドラム缶容量 (kg)", min_value=1.0, value=250.0, step=10.0)
+    operating_days = st.sidebar.number_input("稼働日数（生産日）", min_value=1, value=20)
+    production_units = st.sidebar.number_input("生産台数/日", min_value=1, value=1100)
+    drum_capacity = st.sidebar.number_input("ドラム缶容量(kg)", min_value=1.0, value=250.0, step=10.0)
     split_days = st.sidebar.number_input("振り分け日数", min_value=1, value=15)
-    loss_per_drum = st.sidebar.number_input("ドラム缶交換時のエアー抜き量 (kg)", min_value=0.0, max_value=drum_capacity - 1, value=20.0)
+    loss_per_drum = st.sidebar.number_input("交換時エアー抜き量(kg)", min_value=0.0, max_value=drum_capacity - 1, value=20.0)
 
     # 実質使用可能容量（ロスを除いた容量）
     usable_capacity = drum_capacity - loss_per_drum
@@ -80,7 +80,7 @@ try:
     st.subheader("📌 総使用量の合計と日別振り分け（ドラム缶本数）")
     st.markdown(f"✅ 全工程の必要本数 合計: **{total_drum_count:.1f} 本**")
     st.markdown(f"📅 {split_days}日で振り分けた場合：**1日あたり {daily_drum_count:.1f} 本**")
-    st.markdown(f"♻️ ドラム交換による総ロス見込み: **{total_loss_kg:.1f} kg**")
+    st.markdown(f"♻️ ドラム交換によるエアー抜き量見込み: **{total_loss_kg:.1f} kg**")
 
     #st.subheader("📊 グラフ：総使用量（kg）と必要ドラム缶数")
     #st.bar_chart(per_unit.set_index("工程")[["総使用量（kg）", "必要ドラム缶数"]])
