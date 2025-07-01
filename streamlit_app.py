@@ -78,7 +78,7 @@ try:
     st.dataframe(per_unit_display)
 
     st.subheader("📌 総使用量の合計と日別振り分け（ドラム缶本数）")
-    st.markdown(f"✅ 全工程の必要本数 合計: **{total_drum_count:.1f} 本**")
+    st.markdown(f"🛢 全工程の必要本数 合計: **{total_drum_count:.1f} 本**")
     st.markdown(f"📅 {split_days}日で振り分けた場合：**1日あたり {daily_drum_count:.1f} 本**")
     st.markdown(f"♻️ ドラム交換によるエアー抜き量見込み: **{total_loss_kg:.1f} kg**")
 
