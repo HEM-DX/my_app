@@ -5,7 +5,7 @@ import os
 
 st.title("使用量と必要本数シミュレーター")
 
-# === ✅ Excelファイルの選択肢（旧バージョンのdata/フォルダ構成） ===
+# === ✅ Excelファイルの選択肢（data/フォルダ構成） ===
 file_options = {
     "K40": os.path.join("data", "32Rk40.xlsx"),
     "1085G": os.path.join("data", "1085G使用量.xlsx"),
@@ -13,7 +13,7 @@ file_options = {
 }
 
 # ファイル選択
-selected_file_key = st.sidebar.selectbox("📂 使用するExcelファイルを選択", list(file_options.keys()))
+selected_file_key = st.sidebar.selectbox("材質選択", list(file_options.keys()))
 file_path = file_options[selected_file_key]
 
 try:
