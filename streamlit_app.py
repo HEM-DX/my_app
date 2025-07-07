@@ -1,14 +1,13 @@
 
 
-import streamlit as st 
+import streamlit as st
 import pandas as pd
 import math
+import os
 
 st.title("使用量と必要本数シミュレーター")
 
 # Excelファイルの選択肢
-import os
-
 file_options = {
     "K40": os.path.join("data", "32Rk40.xlsx"),
     "1085G": os.path.join("data", "1085G使用量.xlsx"),
@@ -82,8 +81,15 @@ try:
     st.markdown(f"📅 {split_days}日で振り分けた場合：**1日あたり {daily_drum_count:.1f} 本**")
     st.markdown(f"♻️ ドラム交換によるエアー抜き量見込み: **{total_loss_kg:.1f} kg**")
 
-    #st.subheader("📊 グラフ：総使用量（kg）と必要ドラム缶数")
-    #st.bar_chart(per_unit.set_index("工程")[["総使用量（kg）", "必要ドラム缶数"]])
+    # グラフ表示
+    st.subheader("📊 グラフ：総使用量（kg）と必要ドラム缶数")
+    st.bar_chart(per_unit.set_index("工程")[["総使用量（kg）", "必要ドラム缶数"]])
+
+except FileNotFoundError:
+    st.error("❌ Excelファイルが見つかりません。パスを確認してください。")
+
+except Exception as e:
+    st.error(f"⚠️ エラーが発生しました: {e}")
 
 
 
