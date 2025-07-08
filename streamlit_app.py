@@ -124,25 +124,29 @@ from openpyxl import load_workbook
 # 📄 ファイルパス
 template_path = r"C:\Users\J0134011\OneDrive - Honda\デスクトップ\シーラー管理\calendar_template.xlsx"
 
-# 📌 設定
+# 📌 工程と材質のリスト（3パターン）
 工程_材質リスト = [
     ("D3/D4", "K40"),
     ("D3/D4", "E51G-JP"),
     ("D7", "ペンギンセメント1085G")
 ]
 
-曜日リスト = ["月", "火", "水", "木", "金"] * 4  # 週×5日 → 20列分
+# 📅 曜日（4週間×5日 = 20列）
+曜日リスト = ["月", "火", "水", "木", "金"] * 4
 
-# 📋 入力
-st.title("🗓 ドラム缶発注スケジュール入力")
+# アプリのタイトル
+st.title("🗓 ドラム缶本数カレンダー記入")
 
-selected_item = st.selectbox("工程・材質の組み合わせを選択", [f"{k[0]}・{k[1]}" for k in 工程_材質リスト])
-選択_工程, 選択_材質 = selected_item.split("・")
+# 工程・材質の組み合わせを選択
+selected = st.selectbox("工程・材質を選んでください", [f"{k[0]}・{k[1]}" for k in 工程_材質リスト])
+工程, 材質 = selected.split("・")
 
-入力値 = []
-st.markdown("#### 各日のドラム缶本数を入力")
+# 各日ごとの本数を入力
+st.subheader("各日のドラム缶本数を入力してください")
 
 cols = st.columns(5)
+入力値 = []
+
 for i in range(4):  # 4週分
     st.markdown(f"**{i+1}週目**")
     for j in range(5):  # 月〜金
@@ -151,34 +155,32 @@ for i in range(4):  # 4週分
             val = st.number_input(f"{曜日リスト[day_idx]}", min_value=0, step=1, key=f"{i}_{j}")
             入力値.append(val)
 
-if st.button("✅ 確定してExcelに保存"):
+# ✅ 保存ボタン
+保存する = st.button("✅ 確定してExcelに保存")
 
+if 保存する:
     try:
-        # Excelテンプレートを読み込む
         wb = load_workbook(template_path)
         ws = wb.active
 
-        # 工程・材質の行を探す
+        # 行を探す
         row_num = None
-        for row in range(2, ws.max_row + 1):  # 2行目以降（ヘッダー除く）
-            process_cell = str(ws.cell(row=row, column=1).value).strip()
-            material_cell = str(ws.cell(row=row, column=2).value).strip()
+        for row in range(2, ws.max_row + 1):  # 2行目以降
+            cell_工程 = str(ws.cell(row=row, column=1).value).strip()
+            cell_材質 = str(ws.cell(row=row, column=2).value).strip()
 
-            if process_cell == 選択_工程 and material_cell == 選択_材質:
+            if cell_工程 == 工程 and cell_材質 == 材質:
                 row_num = row
                 break
 
         if row_num is None:
-            st.error("❌ 該当する工程・材質の行がテンプレートに見つかりません。")
+            st.error("⚠ 指定された工程と材質の行が見つかりません。")
         else:
-            # 入力値を3列目以降に順に書き込み（カレンダーの各日）
-            for col_index, val in enumerate(入力値, start=3):
-                ws.cell(row=row_num, column=col_index, value=val)
+            for col_idx, val in enumerate(入力値, start=3):
+                ws.cell(row=row_num, column=col_idx, value=val)
 
-            # 保存
             wb.save(template_path)
-            st.success("✅ 入力内容をExcelに保存しました！")
+            st.success("✅ 保存が完了しました！")
 
     except Exception as e:
-        st.error(f"❌ 保存中にエラーが発生しました: {e}")
-
+        st.error(f"❌ エラーが発生しました: {e}")
