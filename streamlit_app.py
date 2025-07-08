@@ -117,70 +117,48 @@ except Exception as e:
 
 
 
-import streamlit as st
-import pandas as pd
+import openpyxl
 from openpyxl import load_workbook
 
-# 📄 ファイルパス
-template_path = r"C:\Users\J0134011\OneDrive - Honda\デスクトップ\シーラー管理\calendar_template.xlsx"
-
-# 📌 工程と材質のリスト（3パターン）
-工程_材質リスト = [
-    ("D3/D4", "K40"),
-    ("D3/D4", "E51G-JP"),
-    ("D7", "ペンギンセメント1085G")
-]
-
-# 📅 曜日（4週間×5日 = 20列）
-曜日リスト = ["月", "火", "水", "木", "金"] * 4
-
-# アプリのタイトル
-st.title("🗓 ドラム缶本数カレンダー記入")
-
-# 工程・材質の組み合わせを選択
-selected = st.selectbox("工程・材質を選んでください", [f"{k[0]}・{k[1]}" for k in 工程_材質リスト])
-工程, 材質 = selected.split("・")
-
-# 各日ごとの本数を入力
-st.subheader("各日のドラム缶本数を入力してください")
-
-cols = st.columns(5)
-入力値 = []
-
-for i in range(4):  # 4週分
-    st.markdown(f"**{i+1}週目**")
-    for j in range(5):  # 月〜金
-        day_idx = i * 5 + j
-        with cols[j]:
-            val = st.number_input(f"{曜日リスト[day_idx]}", min_value=0, step=1, key=f"{i}_{j}")
-            入力値.append(val)
-
-# ✅ 保存ボタン
-保存する = st.button("✅ 確定してExcelに保存")
-
-if 保存する:
+# 保存ボタン
+if st.button("✅ 確定してExcelに保存"):
     try:
+        # Excelテンプレート読み込み
+        template_path = r"C:\Users\J0134011\OneDrive - Honda\デスクトップ\シーラー管理\calendar_template.xlsx"
         wb = load_workbook(template_path)
         ws = wb.active
 
-        # 行を探す
-        row_num = None
-        for row in range(2, ws.max_row + 1):  # 2行目以降
-            cell_工程 = str(ws.cell(row=row, column=1).value).strip()
-            cell_材質 = str(ws.cell(row=row, column=2).value).strip()
+        # 書き込み対象のセルの起点（この例では B2 セル起点）
+        start_row = 2  # 行番号（2行目）
+        start_col = 3  # C列（=3）
 
-            if cell_工程 == 工程 and cell_材質 == 材質:
-                row_num = row
-                break
+        # 各工程と材質に対応した行
+        material_map = {
+            ("D3/D4", "K40"): 2,
+            ("D3/D4", "E51G-JP"): 3,
+            ("D7", "ペンギンセメント1085G"): 4,
+        }
 
-        if row_num is None:
-            st.error("⚠ 指定された工程と材質の行が見つかりません。")
-        else:
-            for col_idx, val in enumerate(入力値, start=3):
-                ws.cell(row=row_num, column=col_idx, value=val)
+        # 入力されたスケジュールデータをExcelに書き込み
+        col_index = 0
+        for week in weeks:
+            for day in days:
+                key = f"{week}_{day}"
+                value = schedule.get(key, 0)
 
-            wb.save(template_path)
-            st.success("✅ 保存が完了しました！")
+                for (kou, zai), row in material_map.items():
+                    # 工程と材質が一致する行に入力
+                    if kou in kouza_combo[0] and zai in kouza_combo[1]:
+                        ws.cell(row=row, column=start_col + col_index, value=value)
+
+                col_index += 1
+
+        # 保存
+        wb.save(template_path)
+        st.success("✅ スケジュールをExcelに保存しました")
+
+    except FileNotFoundError:
+        st.error("❌ calendar_template.xlsx が見つかりません。パスを確認してください。")
 
     except Exception as e:
-        st.error(f"❌ エラーが発生しました: {e}")
+        st.error(f"⚠️ 保存中にエラーが発生しました: {e}")
