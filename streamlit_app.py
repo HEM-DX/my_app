@@ -110,8 +110,7 @@ try:
 
 
 
-import openpyxl
-from openpyxl import load_workbook
+
 
 if st.button("✅ 確定してExcelに保存"):
     try:
