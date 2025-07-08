@@ -115,3 +115,70 @@ except FileNotFoundError:
 except Exception as e:
     st.error(f"⚠️ エラーが発生しました: {e}")
 
+
+
+import streamlit as st
+import pandas as pd
+from openpyxl import load_workbook
+
+# 📄 ファイルパス
+template_path = r"C:\Users\J0134011\OneDrive - Honda\デスクトップ\シーラー管理\calendar_template.xlsx"
+
+# 📌 設定
+工程_材質リスト = [
+    ("D3/D4", "K40"),
+    ("D3/D4", "E51G-JP"),
+    ("D7", "ペンギンセメント1085G")
+]
+
+曜日リスト = ["月", "火", "水", "木", "金"] * 4  # 週×5日 → 20列分
+
+# 📋 入力
+st.title("🗓 ドラム缶発注スケジュール入力")
+
+selected_item = st.selectbox("工程・材質の組み合わせを選択", [f"{k[0]}・{k[1]}" for k in 工程_材質リスト])
+選択_工程, 選択_材質 = selected_item.split("・")
+
+入力値 = []
+st.markdown("#### 各日のドラム缶本数を入力")
+
+cols = st.columns(5)
+for i in range(4):  # 4週分
+    st.markdown(f"**{i+1}週目**")
+    for j in range(5):  # 月〜金
+        day_idx = i * 5 + j
+        with cols[j]:
+            val = st.number_input(f"{曜日リスト[day_idx]}", min_value=0, step=1, key=f"{i}_{j}")
+            入力値.append(val)
+
+if st.button("✅ 確定してExcelに保存"):
+
+    try:
+        # Excelテンプレートを読み込む
+        wb = load_workbook(template_path)
+        ws = wb.active
+
+        # 工程・材質の行を探す
+        row_num = None
+        for row in range(2, ws.max_row + 1):  # 2行目以降（ヘッダー除く）
+            process_cell = str(ws.cell(row=row, column=1).value).strip()
+            material_cell = str(ws.cell(row=row, column=2).value).strip()
+
+            if process_cell == 選択_工程 and material_cell == 選択_材質:
+                row_num = row
+                break
+
+        if row_num is None:
+            st.error("❌ 該当する工程・材質の行がテンプレートに見つかりません。")
+        else:
+            # 入力値を3列目以降に順に書き込み（カレンダーの各日）
+            for col_index, val in enumerate(入力値, start=3):
+                ws.cell(row=row_num, column=col_index, value=val)
+
+            # 保存
+            wb.save(template_path)
+            st.success("✅ 入力内容をExcelに保存しました！")
+
+    except Exception as e:
+        st.error(f"❌ 保存中にエラーが発生しました: {e}")
+
