@@ -1,3 +1,15 @@
+import streamlit as st
+import os
+
+template_path = r"C:\Users\J0134011\OneDrive - Honda\デスクトップ\my_app\my_streamlit_app\calendar_template.xlsx"
+
+if os.path.exists(template_path):
+    st.success("✅ ファイルが存在します！")
+else:
+    st.error("❌ ファイルが見つかりません！パスを再確認してください。")
+
+st.write("template_path =", template_path)
+st.write("現在の作業ディレクトリ:", os.getcwd())
 import streamlit as st 
 import pandas as pd
 import math
