@@ -120,41 +120,34 @@ except Exception as e:
 import openpyxl
 from openpyxl import load_workbook
 
-# 保存ボタン
 if st.button("✅ 確定してExcelに保存"):
     try:
-        # Excelテンプレート読み込み
         template_path = r"C:\Users\J0134011\OneDrive - Honda\デスクトップ\my_app\my_streamlit_app\calendar_template.xlsx"
         wb = load_workbook(template_path)
         ws = wb.active
 
-        # 書き込み対象のセルの起点（この例では B2 セル起点）
-        start_row = 2  # 行番号（2行目）
         start_col = 3  # C列（=3）
 
-        # 各工程と材質に対応した行
         material_map = {
             ("D3/D4", "K40"): 2,
             ("D3/D4", "E51G-JP"): 3,
-            ("D7", "ペンギンセメント1085G"): 4,
+            ("D7", "1085G"): 4,  # Excelファイルキーに合わせて修正
         }
 
-        # 保存対象の材質と工程（選択中のもの）
         current_material = selected_file_key
+
         for process in selected_processes:
             key = (process, current_material)
             if key in material_map:
                 row = material_map[key]
+                col_index = 0  # 週またぎでリセット
 
-                # 入力されたスケジュールデータをExcelに書き込み
-                col_index = 0
                 for week in weeks:
                     for day in days:
                         cell_value = schedule.get(f"{week}_{day}", 0)
                         ws.cell(row=row, column=start_col + col_index, value=cell_value)
                         col_index += 1
 
-        # 保存
         wb.save(template_path)
         st.success("✅ スケジュールをExcelに保存しました")
 
@@ -163,4 +156,3 @@ if st.button("✅ 確定してExcelに保存"):
 
     except Exception as e:
         st.error(f"⚠️ 保存中にエラーが発生しました: {e}")
-
