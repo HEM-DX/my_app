@@ -129,14 +129,13 @@ if st.button("✅ 確定してExcelに保存"):
 
         start_col = 3  # C列（=3）
 
-
-
-
-
+        # ✅ Streamlitの工程名とExcelの行との対応マップ
         material_map = {
-            ("D3/D4", "K40"): 2,
-            ("D3/D4", "E51G-JP"): 3,
-            ("D7", "1085G"): 4,  # Excelファイルキーに合わせて修正
+            ("RR Door", "K40"): 2,        # D3
+            ("FR Door", "K40"): 3,        # D4
+            ("D7", "1085G"): 4,           # その他の例
+            ("RR Door", "E51G-JP"): 2,
+            ("FR Door", "E51G-JP"): 3,
         }
 
         current_material = selected_file_key
@@ -145,7 +144,7 @@ if st.button("✅ 確定してExcelに保存"):
             key = (process, current_material)
             if key in material_map:
                 row = material_map[key]
-                col_index = 0  # 週またぎでリセット
+                col_index = 0
 
                 for week in weeks:
                     for day in days:
