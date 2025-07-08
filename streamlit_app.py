@@ -111,10 +111,12 @@ try:
 
 
 
+# （ファイル冒頭で既に import 済み）
+# import openpyxl
+# from openpyxl import load_workbook ← これは削除してOK
 
-
-    if st.button("✅ 確定してExcelに保存"):
-       try:
+if st.button("✅ 確定してExcelに保存"):
+    try:
         template_path = r"C:\Users\J0134011\OneDrive - Honda\デスクトップ\my_app\my_streamlit_app\calendar_template.xlsx"
         wb = load_workbook(template_path)
         ws = wb.active
@@ -149,4 +151,3 @@ try:
 
     except Exception as e:
         st.error(f"⚠️ 保存中にエラーが発生しました: {e}")
-
