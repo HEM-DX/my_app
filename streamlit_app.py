@@ -108,11 +108,11 @@ try:
     else:
         st.success("✅ 入力されたスケジュールと必要本数が一致しています。")
 
-    
-    
-    
-    if st.button("✅ 確定してExcelに保存"):
-        try:
+
+
+
+if st.button("✅ 確定してExcelに保存"):
+    try:
         template_path = r"C:\Users\J0134011\OneDrive - Honda\デスクトップ\my_app\my_streamlit_app\calendar_template.xlsx"
         wb = load_workbook(template_path)
         ws = wb.active
@@ -145,3 +145,6 @@ try:
         st.error("❌ calendar_template.xlsx が見つかりません。")
     except Exception as e:
         st.error(f"⚠️ 保存中にエラーが発生しました: {e}")
+
+    
+          
