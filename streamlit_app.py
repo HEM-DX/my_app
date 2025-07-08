@@ -127,31 +127,40 @@ if st.button("✅ 確定してExcelに保存"):
         wb = load_workbook(template_path)
         ws = wb.active
 
-        start_col = 3  # C列（=3）
+        start_col = 3  # C列から開始
 
+        # 工程名変換マップ（画面の工程 → Excelの工程）
+        process_name_map = {
+            "RR Door": "D3/D4",
+            "FR Door": "D3/D4",
+            "Hood": "D7"
+        }
 
-
-
-
+        # Excel上の行指定（工程＋材質）
         material_map = {
             ("D3/D4", "K40"): 2,
             ("D3/D4", "E51G-JP"): 3,
-            ("D7", "1085G"): 4,  # Excelファイルキーに合わせて修正
+            ("D7", "1085G"): 4,
         }
 
         current_material = selected_file_key
 
         for process in selected_processes:
-            key = (process, current_material)
+            # 工程名をExcel用に変換（無ければそのまま）
+            converted_process = process_name_map.get(process, process)
+            key = (converted_process, current_material)
+
             if key in material_map:
                 row = material_map[key]
-                col_index = 0  # 週またぎでリセット
+                col_index = 0  # C列からスタート
 
                 for week in weeks:
                     for day in days:
                         cell_value = schedule.get(f"{week}_{day}", 0)
                         ws.cell(row=row, column=start_col + col_index, value=cell_value)
                         col_index += 1
+            else:
+                st.warning(f"⚠️ 保存スキップ：material_map に ({converted_process}, {current_material}) がありません")
 
         wb.save(template_path)
         st.success("✅ スケジュールをExcelに保存しました")
@@ -160,4 +169,4 @@ if st.button("✅ 確定してExcelに保存"):
         st.error("❌ calendar_template.xlsx が見つかりません。パスを確認してください。")
 
     except Exception as e:
-        st.error(f"⚠️ 保存中にエラーが発生しました: {e}")　　　このコードで修正してー
+        st.error(f"⚠️ 保存中にエラーが発生しました: {e}")
