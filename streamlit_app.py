@@ -110,14 +110,18 @@ try:
 
 
 
+import openpyxl
+from openpyxl import load_workbook
+
 if st.button("✅ 確定してExcelに保存"):
     try:
         template_path = r"C:\Users\J0134011\OneDrive - Honda\デスクトップ\my_app\my_streamlit_app\calendar_template.xlsx"
         wb = load_workbook(template_path)
         ws = wb.active
 
-        start_col = 3  # C列
+        start_col = 3  # C列は index 3
 
+        # 工程×材質のマッピング（Excelの行）
         row_map = {
             ("RR Door", "K40"): 2,
             ("FR Door", "K40"): 3,
@@ -141,7 +145,8 @@ if st.button("✅ 確定してExcelに保存"):
         st.success("✅ スケジュールをExcelに保存しました")
 
     except FileNotFoundError:
-        st.error("❌ calendar_template.xlsx が見つかりません。")
+        st.error("❌ calendar_template.xlsx が見つかりません。ファイルパスを確認してください。")
 
     except Exception as e:
         st.error(f"⚠️ 保存中にエラーが発生しました: {e}")
+
