@@ -108,44 +108,40 @@ try:
     else:
         st.success("✅ 入力されたスケジュールと必要本数が一致しています。")
 
-    # ✅ Excel出力ボタン
+    
+    
+    
     if st.button("✅ 確定してExcelに保存"):
-        try:
-            template_path = "calendar_template.xlsx"
-            wb = load_workbook(template_path)
-            ws = wb.active
+    try:
+        template_path = r"C:\Users\J0134011\OneDrive - Honda\デスクトップ\my_app\my_streamlit_app\calendar_template.xlsx"
+        wb = load_workbook(template_path)
+        ws = wb.active
 
-            start_col = 3  # C列（=3）
+        start_col = 3  # C列（=3）
 
-            # 工程・材質のExcel行マッピング
-            row_map = {
-                ("RR Door", "K40"): 2,
-                ("FR Door", "K40"): 3,
-                ("RR Door", "E51G-JP"): 2,
-                ("FR Door", "E51G-JP"): 3,
-                ("D7", "1085G"): 4
-            }
+        row_map = {
+            ("RR Door", "K40"): 2,
+            ("FR Door", "K40"): 3,
+            ("RR Door", "E51G-JP"): 2,
+            ("FR Door", "E51G-JP"): 3,
+            ("D7", "1085G"): 4
+        }
 
-            for process in selected_processes:
-                key = (process, selected_file_key)
-                if key in row_map:
-                    row = row_map[key]
-                    col_index = 0
-                    for week in weeks:
-                        for day in days:
-                            cell_value = schedule.get(f"{week}_{day}", 0)
-                            ws.cell(row=row, column=start_col + col_index, value=cell_value)
-                            col_index += 1
+        for process in selected_processes:
+            key = (process, selected_file_key)
+            if key in row_map:
+                row = row_map[key]
+                col_index = 0
+                for week in weeks:
+                    for day in days:
+                        cell_value = schedule.get(f"{week}_{day}", 0)
+                        ws.cell(row=row, column=start_col + col_index, value=cell_value)
+                        col_index += 1
 
-            wb.save(template_path)
-            st.success("✅ スケジュールをExcelに保存しました")
+        wb.save(template_path)
+        st.success("✅ スケジュールをExcelに保存しました")
 
-        except FileNotFoundError:
-            st.error("❌ calendar_template.xlsx が見つかりません。")
-        except Exception as e:
-            st.error(f"⚠️ 保存中にエラーが発生しました: {e}")
-
-except FileNotFoundError:
-    st.error("❌ Excelファイルが見つかりません。")
-except Exception as e:
-    st.error(f"⚠️ エラーが発生しました: {e}")
+    except FileNotFoundError:
+        st.error("❌ calendar_template.xlsx が見つかりません。")
+    except Exception as e:
+        st.error(f"⚠️ 保存中にエラーが発生しました: {e}")
