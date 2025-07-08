@@ -1,8 +1,9 @@
-
 import streamlit as st 
 import pandas as pd
 import math
 import os
+import openpyxl
+from openpyxl import load_workbook
 
 st.title("使用量と必要本数シミュレーター")
 
@@ -20,7 +21,7 @@ file_path = file_options[selected_file_key]
 try:
     df = pd.read_excel(file_path, engine="openpyxl")
 
-    # 使用量列の単位除去と変換（"127.5g" や " 127.5 g" に対応）
+    # 使用量列の単位除去と変換
     df["使用量"] = (
         df["使用量"]
         .astype(str)
@@ -50,12 +51,12 @@ try:
     per_unit = filtered_df.groupby("工程")["使用量"].sum().reset_index()
     per_unit.columns = ["工程", "1台あたり使用量（g）"]
 
-    # 総使用量（kg） = 使用量 × 台数 × 稼働日数 / 1000
+    # 総使用量（kg）
     per_unit["総使用量（kg）"] = (
         per_unit["1台あたり使用量（g）"] * production_units * operating_days / 1000
     )
 
-    # 必要ドラム缶数（ロス考慮後の使用可能容量で割って切り上げ）
+    # 必要ドラム缶数
     per_unit["必要ドラム缶数"] = per_unit["総使用量（kg）"].apply(
         lambda x: math.ceil(x / usable_capacity)
     )
@@ -66,7 +67,7 @@ try:
     daily_drum_count = total_drum_count / split_days
     total_loss_kg = per_unit["必要ドラム缶数"].sum() * loss_per_drum
 
-    # 表示用データ
+    # 表示用データ整形
     per_unit_display = per_unit.copy()
     per_unit_display["総使用量（kg）"] = per_unit_display["総使用量（kg）"].map(lambda x: f"{x:.1f} kg")
     per_unit_display["必要ドラム缶数"] = per_unit_display["必要ドラム缶数"].astype(str) + " 本"
@@ -80,12 +81,9 @@ try:
     st.markdown(f"📅 {split_days}日で振り分けた場合：**1日あたり {daily_drum_count:.1f} 本**")
     st.markdown(f"♻️ ドラム交換による総ロス見込み: **{total_loss_kg:.1f} kg**")
 
-   
-
     # ===== 📆 発注スケジュール入力エリア =====
     st.subheader("📆 発注スケジュール（週×曜日）入力")
 
-    # 週・曜日の設定
     days = ["月", "火", "水", "木", "金"]
     weeks = [f"{i+1}週目" for i in range((split_days // 5) + 1)]
 
@@ -110,53 +108,44 @@ try:
     else:
         st.success("✅ 入力されたスケジュールと必要本数が一致しています。")
 
-except FileNotFoundError:
-    st.error("❌ Excelファイルが見つかりません。dataフォルダに対象ファイルが存在するか確認してください。")
+    # ✅ Excel出力ボタン
+    if st.button("✅ 確定してExcelに保存"):
+        try:
+            template_path = "calendar_template.xlsx"
+            wb = load_workbook(template_path)
+            ws = wb.active
 
+            start_col = 3  # C列（=3）
+
+            # 工程・材質のExcel行マッピング
+            row_map = {
+                ("RR Door", "K40"): 2,
+                ("FR Door", "K40"): 3,
+                ("RR Door", "E51G-JP"): 2,
+                ("FR Door", "E51G-JP"): 3,
+                ("D7", "1085G"): 4
+            }
+
+            for process in selected_processes:
+                key = (process, selected_file_key)
+                if key in row_map:
+                    row = row_map[key]
+                    col_index = 0
+                    for week in weeks:
+                        for day in days:
+                            cell_value = schedule.get(f"{week}_{day}", 0)
+                            ws.cell(row=row, column=start_col + col_index, value=cell_value)
+                            col_index += 1
+
+            wb.save(template_path)
+            st.success("✅ スケジュールをExcelに保存しました")
+
+        except FileNotFoundError:
+            st.error("❌ calendar_template.xlsx が見つかりません。")
+        except Exception as e:
+            st.error(f"⚠️ 保存中にエラーが発生しました: {e}")
+
+except FileNotFoundError:
+    st.error("❌ Excelファイルが見つかりません。")
 except Exception as e:
     st.error(f"⚠️ エラーが発生しました: {e}")
-
-
-
-import openpyxl
-from openpyxl import load_workbook
-
-if st.button("✅ 確定してExcelに保存"):
-    try:
-        template_path = "calendar_template.xlsx"
-        wb = load_workbook(template_path)
-        ws = wb.active
-
-        start_col = 3  # C列（=3）
-
-        # ✅ Streamlitの工程名とExcelの行との対応マップ
-        material_map = {
-            ("RR Door", "K40"): 2,        # D3
-            ("FR Door", "K40"): 3,        # D4
-            ("D7", "1085G"): 4,           # その他の例
-            ("RR Door", "E51G-JP"): 2,
-            ("FR Door", "E51G-JP"): 3,
-        }
-
-        current_material = selected_file_key
-
-        for process in selected_processes:
-            key = (process, current_material)
-            if key in material_map:
-                row = material_map[key]
-                col_index = 0
-
-                for week in weeks:
-                    for day in days:
-                        cell_value = schedule.get(f"{week}_{day}", 0)
-                        ws.cell(row=row, column=start_col + col_index, value=cell_value)
-                        col_index += 1
-
-        wb.save(template_path)
-        st.success("✅ スケジュールをExcelに保存しました")
-
-    except FileNotFoundError:
-        st.error("❌ calendar_template.xlsx が見つかりません。パスを確認してください。")
-
-    except Exception as e:
-        st.error(f"⚠️ 保存中にエラーが発生しました: {e}")
