@@ -129,6 +129,28 @@ if st.button("✅ 確定してExcelに保存"):
 
         start_col = 3  # C列（=3）
 
+
+
+        # 保存対象の材質と工程（選択中のもの）
+current_material = selected_file_key
+
+# 工程名変換辞書
+process_name_map = {
+    "RR Door": "D3/D4",
+    "FR Door": "D3/D4",
+    "Hood": "D7"
+}
+
+for process in selected_processes:
+    converted_process = process_name_map.get(process, process)  # 変換がなければそのまま
+
+    key = (converted_process, current_material)
+    if key in material_map:
+        row = material_map[key]
+
+        # 書き込み処理続行...
+
+
         material_map = {
             ("D3/D4", "K40"): 2,
             ("D3/D4", "E51G-JP"): 3,
