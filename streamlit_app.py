@@ -139,19 +139,20 @@ if st.button("✅ 確定してExcelに保存"):
             ("D7", "ペンギンセメント1085G"): 4,
         }
 
-        # 入力されたスケジュールデータをExcelに書き込み
-        col_index = 0
-        for week in weeks:
-            for day in days:
-                key = f"{week}_{day}"
-                value = schedule.get(key, 0)
+        # 保存対象の材質と工程（選択中のもの）
+        current_material = selected_file_key
+        for process in selected_processes:
+            key = (process, current_material)
+            if key in material_map:
+                row = material_map[key]
 
-                for (kou, zai), row in material_map.items():
-                    # 工程と材質が一致する行に入力
-                    if kou in kouza_combo[0] and zai in kouza_combo[1]:
-                        ws.cell(row=row, column=start_col + col_index, value=value)
-
-                col_index += 1
+                # 入力されたスケジュールデータをExcelに書き込み
+                col_index = 0
+                for week in weeks:
+                    for day in days:
+                        cell_value = schedule.get(f"{week}_{day}", 0)
+                        ws.cell(row=row, column=start_col + col_index, value=cell_value)
+                        col_index += 1
 
         # 保存
         wb.save(template_path)
@@ -162,3 +163,4 @@ if st.button("✅ 確定してExcelに保存"):
 
     except Exception as e:
         st.error(f"⚠️ 保存中にエラーが発生しました: {e}")
+
