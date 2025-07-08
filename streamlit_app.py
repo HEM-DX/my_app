@@ -39,7 +39,7 @@ try:
     production_units = st.sidebar.number_input("1日あたり生産台数", min_value=1, value=1100)
     drum_capacity = st.sidebar.number_input("ドラム缶容量 (kg)", min_value=1.0, value=250.0, step=10.0)
     split_days = st.sidebar.number_input("振り分け日数（搬入）", min_value=1, value=15)
-    loss_per_drum = st.sidebar.number_input("1本交換時のロス量 (kg)", min_value=0.0, max_value=drum_capacity - 1, value=20.0)
+    loss_per_drum = st.sidebar.number_input("交換時エアー抜き量 (kg)", min_value=0.0, max_value=drum_capacity - 1, value=20.0)
 
     # 実質使用可能容量（ロスを除いた容量）
     usable_capacity = drum_capacity - loss_per_drum
