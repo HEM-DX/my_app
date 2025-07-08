@@ -115,37 +115,3 @@ except FileNotFoundError:
 except Exception as e:
     st.error(f"⚠️ エラーが発生しました: {e}")
 
-import openpyxl
-
-st.markdown("---")
-st.subheader("📁 カレンダーExcelに保存")
-
-if st.button("📤 スケジュールをExcelカレンダーに書き込む"):
-    try:
-        # Excelテンプレートの読み込み
-        calendar_path = r"C:\Users\J0134011\OneDrive - Honda\デスクトップ\シーラー管理\calendar_template.xlsx"
-        wb = openpyxl.load_workbook(calendar_path)
-        ws = wb.active
-
-        # 曜日列の位置（列B～Fが 月〜金に対応している想定）
-        day_to_col = {"月": 2, "火": 3, "水": 4, "木": 5, "金": 6}
-
-        # 書き込み処理（1週目→2行目、2週目→3行目…と仮定）
-        for key, value in schedule.items():
-            week_label, day = key.split("_")  # e.g., "1週目_月"
-            week_num = int(week_label[0])     # "1週目" → 1
-            row = week_num + 1                # データは2行目から
-            col = day_to_col.get(day)
-
-            if col:
-                ws.cell(row=row, column=col, value=value)
-
-        # 保存先（上書きではなく別ファイルとして保存）
-        save_path = r"C:\Users\J0134011\OneDrive - Honda\デスクトップ\シーラー管理\calendar_filled.xlsx"
-        wb.save(save_path)
-
-        st.success(f"✅ カレンダーに保存しました → `{save_path}`")
-
-    except Exception as e:
-        st.error(f"❌ 書き込み中にエラーが発生しました: {e}")
-
