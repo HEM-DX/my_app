@@ -1,24 +1,20 @@
 
-
 import streamlit as st 
 import pandas as pd
 import math
+import os
 
 st.title("使用量と必要本数シミュレーター")
 
-# Excelファイルの選択肢
-import os
-
+# === ✅ Excelファイルの選択肢（data/フォルダ構成） ===
 file_options = {
-    "32Rk40": os.path.join("data", "32Rk40.xlsx"),
+    "K40": os.path.join("data", "32Rk40.xlsx"),
     "1085G": os.path.join("data", "1085G使用量.xlsx"),
     "E51G-JP": os.path.join("data", "E51G-JP使用量.xlsx")
 }
 
-}
-
 # ファイル選択
-selected_file_key = st.sidebar.selectbox("📂 使用するExcelファイルを選択", list(file_options.keys()))
+selected_file_key = st.sidebar.selectbox("材質選択", list(file_options.keys()))
 file_path = file_options[selected_file_key]
 
 try:
@@ -84,13 +80,80 @@ try:
     st.markdown(f"📅 {split_days}日で振り分けた場合：**1日あたり {daily_drum_count:.1f} 本**")
     st.markdown(f"♻️ ドラム交換による総ロス見込み: **{total_loss_kg:.1f} kg**")
 
-    #st.subheader("📊 グラフ：総使用量（kg）と必要ドラム缶数")
-    #st.bar_chart(per_unit.set_index("工程")[["総使用量（kg）", "必要ドラム缶数"]])
+   
 
+    # ===== 📆 発注スケジュール入力エリア =====
+    st.subheader("📆 発注スケジュール（週×曜日）入力")
 
+    # 週・曜日の設定
+    days = ["月", "火", "水", "木", "金"]
+    weeks = [f"{i+1}週目" for i in range((split_days // 5) + 1)]
 
+    schedule = {}
+    total_input = 0
+
+    for week in weeks:
+        st.markdown(f"**{week}**")
+        cols = st.columns(len(days))
+        for i, day in enumerate(days):
+            key = f"{week}_{day}"
+            val = cols[i].number_input(f"{day}", key=key, min_value=0, step=1, value=0)
+            schedule[key] = val
+            total_input += val
+
+    st.markdown("---")
+    st.markdown(f"🧮 入力した合計本数: **{total_input} 本**")
+    st.markdown(f"🔢 自動計算した必要本数: **{math.ceil(total_drum_count)} 本**")
+
+    if total_input != math.ceil(total_drum_count):
+        st.warning("⚠️ 入力された本数が必要本数と一致していません。")
+    else:
+        st.success("✅ 入力されたスケジュールと必要本数が一致しています。")
 
 except FileNotFoundError:
-    st.error("❌ Excelファイルが見つかりません。パスを確認してください。")
+    st.error("❌ Excelファイルが見つかりません。dataフォルダに対象ファイルが存在するか確認してください。")
+
 except Exception as e:
-    st.error(f"⚠️ エラーが発生しました: {e}") 
+    st.error(f"⚠️ エラーが発生しました: {e}")
+
+
+
+import openpyxl
+from openpyxl import load_workbook
+
+if st.button("✅ 確定してExcelに保存"):
+    try:
+        template_path = r"C:\Users\J0134011\OneDrive - Honda\デスクトップ\my_app\my_streamlit_app\calendar_template.xlsx"
+        wb = load_workbook(template_path)
+        ws = wb.active
+
+        start_col = 3  # C列（=3）
+
+        material_map = {
+            ("D3/D4", "K40"): 2,
+            ("D3/D4", "E51G-JP"): 3,
+            ("D7", "1085G"): 4,  # Excelファイルキーに合わせて修正
+        }
+
+        current_material = selected_file_key
+
+        for process in selected_processes:
+            key = (process, current_material)
+            if key in material_map:
+                row = material_map[key]
+                col_index = 0  # 週またぎでリセット
+
+                for week in weeks:
+                    for day in days:
+                        cell_value = schedule.get(f"{week}_{day}", 0)
+                        ws.cell(row=row, column=start_col + col_index, value=cell_value)
+                        col_index += 1
+
+        wb.save(template_path)
+        st.success("✅ スケジュールをExcelに保存しました")
+
+    except FileNotFoundError:
+        st.error("❌ calendar_template.xlsx が見つかりません。パスを確認してください。")
+
+    except Exception as e:
+        st.error(f"⚠️ 保存中にエラーが発生しました: {e}")
